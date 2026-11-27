@@ -1,1 +1,331 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Касса школьной ярмарки</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --primary: #2563eb;
+      --danger: #dc2626;
+      --success: #15803d;
+      --text: #172033;
+      --border: #d9e1ed;
+    }
 
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+    }
+
+    h1 {
+      margin: 0 0 24px;
+      text-align: center;
+    }
+
+    .products {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .product,
+    .basket {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 4px 12px rgba(23, 32, 51, 0.06);
+    }
+
+    .product h2 {
+      margin: 0 0 8px;
+      font-size: 20px;
+    }
+
+    .product p {
+      margin: 6px 0;
+    }
+
+    .product label {
+      display: block;
+      margin-top: 12px;
+      font-weight: bold;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      height: 44px;
+      margin-top: 6px;
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    .basket {
+      margin-top: 20px;
+    }
+
+    .basket h2 {
+      margin-top: 0;
+    }
+
+    #basketList {
+      min-height: 44px;
+    }
+
+    .basket-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 6px 0;
+      border-bottom: 1px dashed var(--border);
+    }
+
+    .total {
+      margin: 16px 0;
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    button {
+      min-height: 44px;
+      border: 0;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    #confirmButton {
+      flex: 1;
+      color: white;
+      background: var(--primary);
+    }
+
+    #resetButton {
+      background: #e5e7eb;
+    }
+
+    #message {
+      min-height: 24px;
+      margin: 12px 0 0;
+      font-weight: bold;
+    }
+
+    .error { color: var(--danger); }
+    .success { color: var(--success); }
+
+    #receipt {
+      white-space: pre-line;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    @media (max-width: 700px) {
+      .products { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <h1>Касса школьной ярмарки</h1>
+
+    <section class="products" id="products"></section>
+
+    <section class="basket">
+      <h2>Корзина</h2>
+      <div id="basketList">Корзина пуста</div>
+      <div class="total" id="total">Итого: 0 тг</div>
+
+      <div class="buttons">
+        <button id="confirmButton" type="button">Подтвердить покупку</button>
+        <button id="resetButton" type="button">Очистить</button>
+      </div>
+
+      <p id="message" aria-live="polite"></p>
+      <div id="receipt"></div>
+    </section>
+  </main>
+
+  <script>
+    const products = [
+      { id: "postcard", name: "Открытка", price: 300, stock: 5 },
+      { id: "badge", name: "Значок", price: 500, stock: 3 },
+      { id: "bookmark", name: "Закладка", price: 150, stock: 4 }
+    ];
+
+    const cart = {
+      postcard: 0,
+      badge: 0,
+      bookmark: 0
+    };
+
+    const productsElement = document.getElementById("products");
+    const basketListElement = document.getElementById("basketList");
+    const totalElement = document.getElementById("total");
+    const messageElement = document.getElementById("message");
+    const receiptElement = document.getElementById("receipt");
+
+    function renderProducts() {
+      productsElement.innerHTML = "";
+
+      products.forEach(product => {
+        const card = document.createElement("article");
+        card.className = "product";
+
+        card.innerHTML = `
+          <h2>${product.name}</h2>
+          <p><strong>Цена:</strong> ${product.price} тг</p>
+          <p><strong>Доступно:</strong> <span id="stock-${product.id}">${product.stock}</span> шт.</p>
+          <label for="quantity-${product.id}">Количество:</label>
+          <input
+            id="quantity-${product.id}"
+            type="number"
+            min="0"
+            step="1"
+            value="${cart[product.id]}"
+          >
+        `;
+
+        productsElement.appendChild(card);
+
+        const input = card.querySelector("input");
+        input.addEventListener("input", () => {
+          let quantity = Number.parseInt(input.value, 10);
+
+          if (!Number.isInteger(quantity) || quantity < 0) {
+            quantity = 0;
+          }
+
+          cart[product.id] = quantity;
+          input.value = quantity;
+          clearMessage();
+          renderBasket();
+        });
+      });
+    }
+
+    function renderBasket() {
+      const selected = products.filter(product => cart[product.id] > 0);
+
+      if (selected.length === 0) {
+        basketListElement.textContent = "Корзина пуста";
+        totalElement.textContent = "Итого: 0 тг";
+        return;
+      }
+
+      basketListElement.innerHTML = "";
+      let total = 0;
+
+      selected.forEach(product => {
+        const quantity = cart[product.id];
+        const sum = quantity * product.price;
+        total += sum;
+
+        const row = document.createElement("div");
+        row.className = "basket-row";
+        row.innerHTML = `
+          <span>${product.name} × ${quantity}</span>
+          <strong>${sum} тг</strong>
+        `;
+        basketListElement.appendChild(row);
+      });
+
+      totalElement.textContent = `Итого: ${total} тг`;
+    }
+
+    function clearMessage() {
+      messageElement.textContent = "";
+      messageElement.className = "";
+      receiptElement.textContent = "";
+    }
+
+    function clearCart() {
+      products.forEach(product => {
+        cart[product.id] = 0;
+      });
+
+      renderProducts();
+      renderBasket();
+    }
+
+    document.getElementById("confirmButton").addEventListener("click", () => {
+      clearMessage();
+
+      const selected = products.filter(product => cart[product.id] > 0);
+
+      if (selected.length === 0) {
+        messageElement.textContent = "Пустая корзина не оформляется.";
+        messageElement.className = "error";
+        return;
+      }
+
+      const unavailable = selected.find(
+        product => cart[product.id] > product.stock
+      );
+
+      if (unavailable) {
+        messageElement.textContent =
+          `Недостаточно товара: ${unavailable.name}. Доступно ${unavailable.stock} шт.`;
+        messageElement.className = "error";
+        return;
+      }
+
+      let total = 0;
+      let receipt = "ЧЕК\n";
+
+      selected.forEach(product => {
+        const quantity = cart[product.id];
+        const sum = quantity * product.price;
+        total += sum;
+        receipt += `${product.name} × ${quantity} — ${sum} тг\n`;
+      });
+
+      receipt += `\nИтого: ${total} тг`;
+
+      selected.forEach(product => {
+        product.stock -= cart[product.id];
+      });
+
+      products.forEach(product => {
+        document.getElementById(`stock-${product.id}`).textContent = product.stock;
+      });
+
+      receiptElement.textContent = receipt;
+      messageElement.textContent = "Покупка оформлена.";
+      messageElement.className = "success";
+
+      clearCart();
+    });
+
+    document.getElementById("resetButton").addEventListener("click", () => {
+      clearMessage();
+      clearCart();
+    });
+
+    renderProducts();
+    renderBasket();
+  </script>
+</body>
+</html>
