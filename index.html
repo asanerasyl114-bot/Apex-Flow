@@ -3,152 +3,196 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Apex Flow</title>
+  <title>Apex Flow —Касса ярмарки</title>
   <style>
     :root {
-      --blue: #3157d5;
-      --blue-dark: #2442a8;
-      --light-blue: #edf3ff;
-      --text: #172033;
-      --muted: #667085;
-      --border: #dde4ef;
-      --background: #f5f7fb;
-      --danger: #c93434;
-      --success: #14804a;
+      --cream: #fff8ed;
+      --peach: #ffb86b;
+      --orange: #ef7d45;
+      --orange-dark: #d85f2f;
+      --mint: #76cbb2;
+      --mint-dark: #3a9a80;
+      --yellow: #ffd76a;
+      --text: #342a24;
+      --muted: #806f65;
+      --border: #eadccb;
+      --danger: #b94a43;
+      --success: #397d5a;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
       min-height: 100vh;
-      background: var(--background);
       color: var(--text);
-      font-family: Arial, sans-serif;
+      font-family: "Trebuchet MS", Arial, sans-serif;
+      background:
+        radial-gradient(circle at 10% 10%, rgba(255, 215, 106, .35) 0 90px, transparent 91px),
+        radial-gradient(circle at 92% 8%, rgba(118, 203, 178, .28) 0 110px, transparent 111px),
+        linear-gradient(135deg, #fffaf2, #fff1df);
     }
 
     .container {
-      width: min(100% - 24px, 960px);
+      width: min(100% - 24px, 980px);
       margin: 0 auto;
-      padding: 28px 0;
+      padding: 24px 0 40px;
     }
 
     .header {
-      margin-bottom: 20px;
-      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+      padding: 16px 18px;
+      border: 2px solid rgba(239, 125, 69, .18);
+      border-radius: 22px;
+      background: rgba(255, 255, 255, .78);
+      box-shadow: 0 10px 28px rgba(113, 78, 48, .08);
     }
 
-    .header h1 {
-      margin: 0;
-      font-size: clamp(26px, 5vw, 38px);
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-mark {
+      width: 54px;
+      height: 54px;
+      display: grid;
+      place-items: center;
+      border-radius: 18px;
+      background: var(--orange);
+      color: white;
+      font-size: 28px;
+      transform: rotate(-3deg);
     }
 
-    .header p {
-      margin: 8px 0 0;
-      color: var(--muted);
+    .header h1 { margin: 0; font-size: clamp(22px, 4vw, 34px); }
+    .header p { margin: 4px 0 0; color: var(--muted); }
+
+    .open-badge {
+      flex: none;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #e0f4ed;
+      color: var(--mint-dark);
+      font-weight: 800;
     }
 
     .products {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
+      gap: 14px;
     }
 
-    .card,
-    .basket {
-      background: white;
+    .card, .basket {
       border: 1px solid var(--border);
-      border-radius: 16px;
-      box-shadow: 0 8px 24px rgba(41, 56, 86, 0.08);
+      border-radius: 22px;
+      background: rgba(255, 255, 255, .92);
+      box-shadow: 0 10px 26px rgba(113, 78, 48, .09);
     }
 
-    .card {
-      overflow: hidden;
+    .card { overflow: hidden; transition: transform .18s ease, box-shadow .18s ease; }
+    .card:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(113, 78, 48, .13); }
+
+    .card-top {
+      min-height: 112px;
+      display: grid;
+      place-items: center;
+      background: var(--card-bg);
+      border-bottom: 1px solid rgba(234, 220, 203, .8);
     }
 
-    .card-body {
-      padding: 18px;
-    }
+    .emoji { font-size: 64px; filter: drop-shadow(0 5px 3px rgba(90, 60, 40, .12)); }
+    .card-body { padding: 16px; }
 
-    .product-name {
-      margin: 0 0 12px;
-      font-size: 21px;
-    }
-
-    .product-info {
+    .card-heading {
       display: flex;
+      align-items: start;
       justify-content: space-between;
       gap: 8px;
-      margin-bottom: 8px;
-      color: var(--muted);
+      margin-bottom: 12px;
     }
 
-    .product-info strong {
-      color: var(--text);
+    .product-name { margin: 0; font-size: 20px; }
+    .price {
+      flex: none;
+      padding: 6px 9px;
+      border-radius: 10px;
+      background: #fff0d8;
+      color: #9a512d;
+      font-weight: 900;
     }
 
-    .quantity-label {
-      display: block;
-      margin-top: 16px;
-      font-weight: 700;
+    .stock-badge {
+      display: inline-block;
+      margin-bottom: 12px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 900;
     }
 
+    .stock-ok { background: #daf3e9; color: #28745a; }
+    .stock-low { background: #fff0b8; color: #8a6510; }
+    .stock-out { background: #f5dedb; color: var(--danger); }
+
+    .quantity-label { display: block; margin-bottom: 8px; color: var(--muted); font-weight: 800; }
     .quantity-control {
       display: grid;
-      grid-template-columns: 42px 1fr 42px;
+      grid-template-columns: 58px 1fr 58px;
+      align-items: center;
       gap: 8px;
-      margin-top: 8px;
-    }
-
-    .quantity-control button,
-    .quantity-control input {
-      height: 44px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      background: white;
-      font-size: 18px;
-      text-align: center;
     }
 
     .quantity-control button {
-      color: var(--blue);
-      font-weight: bold;
+      height: 58px;
+      border: 0;
+      border-radius: 16px;
+      background: var(--mint);
+      color: #173c32;
+      font-size: 30px;
+      font-weight: 900;
       cursor: pointer;
+      box-shadow: 0 4px 0 #4b9d86;
+      transition: transform .08s ease, box-shadow .08s ease;
     }
 
-    .quantity-control button:hover {
-      background: var(--light-blue);
-    }
+    .quantity-control button:last-child { background: var(--peach); box-shadow: 0 4px 0 #d98a43; }
+    .quantity-control button:active { transform: translateY(3px); box-shadow: 0 1px 0 #777; }
 
-    .quantity-control input::-webkit-inner-spin-button {
-      display: none;
+    .quantity-value {
+      height: 58px;
+      display: grid;
+      place-items: center;
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      background: #fffdf8;
+      font-size: 24px;
+      font-weight: 900;
     }
 
     .basket {
-      margin-top: 18px;
-      padding: 20px;
+      margin-top: 16px;
+      padding: 18px;
     }
 
-    .basket-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .basket-header { display: flex; justify-content: space-between; align-items: center; }
+    .basket h2 { margin: 0; }
+    .basket-count {
+      min-width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--orange);
+      color: white;
+      font-weight: 900;
     }
 
-    .basket h2 {
-      margin: 0;
-    }
-
-    #basketList {
-      margin-top: 14px;
-    }
-
+    #basketList { margin-top: 12px; }
     .empty {
-      padding: 16px;
-      border: 1px dashed var(--border);
-      border-radius: 10px;
+      padding: 14px;
+      border: 2px dashed #d8cbbd;
+      border-radius: 14px;
       color: var(--muted);
       text-align: center;
     }
@@ -157,103 +201,126 @@
       display: flex;
       justify-content: space-between;
       gap: 12px;
-      padding: 10px 0;
-      border-bottom: 1px solid #edf0f5;
+      padding: 10px 4px;
+      border-bottom: 1px solid #f0e7dc;
     }
 
     .total {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin: 18px 0;
-      font-size: 21px;
-      font-weight: bold;
+      margin: 16px 0;
+      padding: 14px;
+      border-radius: 14px;
+      background: #fff3df;
+      font-size: 22px;
+      font-weight: 900;
     }
 
-    .actions {
-      display: grid;
-      grid-template-columns: 1fr 150px;
-      gap: 10px;
-    }
-
+    .actions { display: grid; grid-template-columns: 1fr 150px; gap: 10px; }
     .action-button {
-      height: 48px;
+      height: 52px;
       border: 0;
-      border-radius: 10px;
+      border-radius: 15px;
       font-size: 16px;
-      font-weight: bold;
+      font-weight: 900;
       cursor: pointer;
     }
 
-    #confirmButton {
-      background: var(--blue);
-      color: white;
-    }
+    #confirmButton { background: var(--orange); color: white; box-shadow: 0 5px 0 var(--orange-dark); }
+    #confirmButton:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--orange-dark); }
+    #clearButton { background: #eee7df; color: var(--text); }
 
-    #confirmButton:hover {
-      background: var(--blue-dark);
-    }
-
-    #clearButton {
-      background: #edf0f5;
-      color: var(--text);
-    }
-
-    #message {
-      min-height: 24px;
-      margin: 14px 0 0;
-      font-weight: bold;
-    }
-
-    .error {
-      color: var(--danger);
-    }
-
-    .success {
-      color: var(--success);
-    }
+    #message { min-height: 24px; margin: 14px 0 0; font-weight: 900; }
+    .error { color: var(--danger); }
+    .success { color: var(--success); }
 
     #receipt {
       display: none;
-      margin-top: 14px;
-      padding: 18px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: #fafbfe;
-      white-space: pre-line;
-      font-family: monospace;
-      line-height: 1.6;
+      position: relative;
+      max-width: 520px;
+      margin: 18px auto 8px;
+      padding: 22px 24px 28px;
+      background: #fffdf4;
+      color: #483a30;
+      font-family: "Courier New", monospace;
+      font-size: 15px;
+      line-height: 1.55;
+      filter: drop-shadow(0 8px 7px rgba(75, 55, 38, .12));
     }
 
-    #receipt.visible {
-      display: block;
+    #receipt.visible { display: block; }
+    #receipt::before,
+    #receipt::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 10px;
+      background: linear-gradient(135deg, transparent 33%, #fffdf4 34%) 0 0/12px 12px repeat-x;
+    }
+    #receipt::before { top: -9px; }
+    #receipt::after { bottom: -9px; transform: rotate(180deg); }
+
+    .receipt-head, .receipt-dashed, .receipt-total, .receipt-foot {
+      border-bottom: 1px dashed #bda995;
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      text-align: center;
+    }
+    .receipt-dashed { border-bottom: 1px dashed #bda995; }
+    .receipt-row { display: flex; justify-content: space-between; gap: 10px; }
+    .receipt-total { font-weight: bold; }
+    .receipt-foot { border: 0; margin: 12px 0 0; padding: 0; }
+
+    .confetti {
+      position: fixed;
+      z-index: 20;
+      width: 9px;
+      height: 14px;
+      border-radius: 3px;
+      pointer-events: none;
+      animation: fall 900ms ease-out forwards;
+    }
+
+    @keyframes fall {
+      0% { transform: translate(0, 0) rotate(0); opacity: 1; }
+      100% { transform: translate(var(--dx), 180px) rotate(540deg); opacity: 0; }
     }
 
     @media (max-width: 700px) {
-      .container {
-        width: min(100% - 16px, 960px);
-        padding: 16px 0;
-      }
+      .container { width: min(100% - 16px, 980px); padding: 12px 0 28px; }
+      .header { padding: 12px; }
+      .brand-mark { width: 46px; height: 46px; border-radius: 15px; }
+      .open-badge { display: none; }
+      .products { grid-template-columns: 1fr; }
+      .card { display: grid; grid-template-columns: 112px 1fr; }
+      .card-top { min-height: 100%; }
+      .emoji { font-size: 48px; }
+      .actions { grid-template-columns: 1fr; }
+      .basket { padding: 14px; }
+    }
 
-      .products {
-        grid-template-columns: 1fr;
-      }
-
-      .actions {
-        grid-template-columns: 1fr;
-      }
-
-      .basket {
-        padding: 16px;
-      }
+    @media (max-width: 420px) {
+      .card { grid-template-columns: 92px 1fr; }
+      .card-body { padding: 12px; }
+      .quantity-control { grid-template-columns: 52px 1fr 52px; }
+      .quantity-control button { height: 52px; }
+      .quantity-value { height: 52px; }
     }
   </style>
 </head>
 <body>
   <main class="container">
     <header class="header">
-      <h1>Apex Flow добро пожаловать</h1>
-      <p>Выберите товары и оформите покупку</p>
+      <div class="brand">
+        <div class="brand-mark">A</div>
+        <div>
+          <h1>Apex Flow</h1>
+          <p>Касса школьной ярмарки</p>
+        </div>
+      </div>
+      <div class="open-badge">● Ярмарка открыта</div>
     </header>
 
     <section class="products" id="products"></section>
@@ -261,6 +328,7 @@
     <section class="basket">
       <div class="basket-header">
         <h2>Корзина</h2>
+        <div class="basket-count" id="basketCount">0</div>
       </div>
 
       <div id="basketList"></div>
@@ -270,12 +338,8 @@
       </div>
 
       <div class="actions">
-        <button class="action-button" id="confirmButton" type="button">
-          Подтвердить покупку
-        </button>
-        <button class="action-button" id="clearButton" type="button">
-          Очистить
-        </button>
+        <button class="action-button" id="confirmButton" type="button">Подтвердить покупку</button>
+        <button class="action-button" id="clearButton" type="button">Очистить</button>
       </div>
 
       <p id="message" aria-live="polite"></p>
@@ -285,89 +349,69 @@
 
   <script>
     const products = [
-      { id: "postcard", name: "Открытка", price: 300, stock: 5 },
-      { id: "badge", name: "Значок", price: 500, stock: 3 },
-      { id: "bookmark", name: "Закладка", price: 150, stock: 4 }
+      { id: "postcard", name: "Открытка", price: 300, stock: 5, emoji: "💌", color: "#ffe1df" },
+      { id: "badge", name: "Значок", price: 500, stock: 3, emoji: "⭐", color: "#fff0b8" },
+      { id: "bookmark", name: "Закладка", price: 150, stock: 4, emoji: "🔖", color: "#dff4ec" }
     ];
 
-    const cart = {
-      postcard: 0,
-      badge: 0,
-      bookmark: 0
-    };
+    const cart = { postcard: 0, badge: 0, bookmark: 0 };
 
     const productsElement = document.getElementById("products");
     const basketListElement = document.getElementById("basketList");
+    const basketCountElement = document.getElementById("basketCount");
     const totalElement = document.getElementById("total");
     const messageElement = document.getElementById("message");
     const receiptElement = document.getElementById("receipt");
+
+    function stockInfo(stock) {
+      if (stock <= 0) return { text: "Распродано", className: "stock-out" };
+      if (stock <= 2) return { text: `Мало · ${stock} шт.`, className: "stock-low" };
+      return { text: `В наличии · ${stock} шт.`, className: "stock-ok" };
+    }
 
     function renderProducts() {
       productsElement.innerHTML = "";
 
       products.forEach(product => {
+        const stock = stockInfo(product.stock);
         const card = document.createElement("article");
         card.className = "card";
         card.innerHTML = `
+          <div class="card-top" style="--card-bg:${product.color}">
+            <span class="emoji" role="img" aria-label="${product.name}">${product.emoji}</span>
+          </div>
           <div class="card-body">
-            <h2 class="product-name">${product.name}</h2>
-            <div class="product-info">
-              <span>Цена</span>
-              <strong>${product.price} тг</strong>
+            <div class="card-heading">
+              <h2 class="product-name">${product.name}</h2>
+              <div class="price">${product.price} тг</div>
             </div>
-            <div class="product-info">
-              <span>На столе</span>
-              <strong><span id="stock-${product.id}">${product.stock}</span> шт.</strong>
-            </div>
-            <label class="quantity-label" for="quantity-${product.id}">
-              Количество
-            </label>
+            <span class="stock-badge ${stock.className}">${stock.text}</span>
+            <span class="quantity-label">Количество</span>
             <div class="quantity-control">
-              <button type="button" data-action="minus" data-id="${product.id}">−</button>
-              <input
-                id="quantity-${product.id}"
-                type="number"
-                min="0"
-                step="1"
-                value="${cart[product.id]}"
-              >
-              <button type="button" data-action="plus" data-id="${product.id}">+</button>
+              <button type="button" data-action="minus" data-id="${product.id}" aria-label="Уменьшить ${product.name}">−</button>
+              <div class="quantity-value" id="quantity-${product.id}">${cart[product.id]}</div>
+              <button type="button" data-action="plus" data-id="${product.id}" aria-label="Увеличить ${product.name}">+</button>
             </div>
           </div>
         `;
         productsElement.appendChild(card);
-
-        const input = card.querySelector("input");
-
-        input.addEventListener("input", () => {
-          let quantity = Number.parseInt(input.value, 10);
-
-          if (!Number.isInteger(quantity) || quantity < 0) {
-            quantity = 0;
-          }
-
-          cart[product.id] = quantity;
-          input.value = quantity;
-          clearStatus();
-          renderBasket();
-        });
       });
 
       document.querySelectorAll("[data-action]").forEach(button => {
         button.addEventListener("click", () => {
           const productId = button.dataset.id;
-          const input = document.getElementById(`quantity-${productId}`);
           let quantity = cart[productId];
+          const product = products.find(item => item.id === productId);
 
           if (button.dataset.action === "plus") {
-            quantity++;
+            quantity = Math.min(product.stock, quantity + 1);
           } else {
             quantity = Math.max(0, quantity - 1);
           }
 
           cart[productId] = quantity;
-          input.value = quantity;
           clearStatus();
+          renderProducts();
           renderBasket();
         });
       });
@@ -375,11 +419,12 @@
 
     function renderBasket() {
       const selected = products.filter(product => cart[product.id] > 0);
+      let itemCount = 0;
 
       if (selected.length === 0) {
-        basketListElement.innerHTML =
-          '<div class="empty">Корзина пуста</div>';
+        basketListElement.innerHTML = '<div class="empty">Корзина пуста · выберите товар</div>';
         totalElement.textContent = "0 тг";
+        basketCountElement.textContent = "0";
         return;
       }
 
@@ -390,19 +435,17 @@
         const quantity = cart[product.id];
         const sum = quantity * product.price;
         total += sum;
-
-        basketListElement.insertAdjacentHTML(
-          "beforeend",
-          `
-            <div class="basket-row">
-              <span>${product.name} × ${quantity}</span>
-              <strong>${sum} тг</strong>
-            </div>
-          `
-        );
+        itemCount += quantity;
+        basketListElement.insertAdjacentHTML("beforeend", `
+          <div class="basket-row">
+            <span>${product.emoji} ${product.name} × ${quantity}</span>
+            <strong>${sum} тг</strong>
+          </div>
+        `);
       });
 
       totalElement.textContent = `${total} тг`;
+      basketCountElement.textContent = itemCount;
     }
 
     function clearStatus() {
@@ -413,17 +456,31 @@
     }
 
     function clearCart() {
-      products.forEach(product => {
-        cart[product.id] = 0;
-      });
-
+      products.forEach(product => { cart[product.id] = 0; });
       renderProducts();
       renderBasket();
     }
 
+    function launchConfetti() {
+      const button = document.getElementById("confirmButton");
+      const rect = button.getBoundingClientRect();
+      const colors = ["#ef7d45", "#76cbb2", "#ffd76a", "#ff91a4", "#8c7ae6"];
+
+      for (let i = 0; i < 34; i++) {
+        const piece = document.createElement("span");
+        piece.className = "confetti";
+        piece.style.left = `${rect.left + rect.width / 2 + (Math.random() - .5) * 180}px`;
+        piece.style.top = `${rect.top + rect.height / 2}px`;
+        piece.style.background = colors[i % colors.length];
+        piece.style.setProperty("--dx", `${(Math.random() - .5) * 260}px`);
+        piece.style.animationDelay = `${Math.random() * 120}ms`;
+        document.body.appendChild(piece);
+        setTimeout(() => piece.remove(), 1200);
+      }
+    }
+
     document.getElementById("confirmButton").addEventListener("click", () => {
       clearStatus();
-
       const selected = products.filter(product => cart[product.id] > 0);
 
       if (selected.length === 0) {
@@ -432,44 +489,41 @@
         return;
       }
 
-      const unavailable = selected.find(
-        product => cart[product.id] > product.stock
-      );
-
+      const unavailable = selected.find(product => cart[product.id] > product.stock);
       if (unavailable) {
-        messageElement.textContent =
-          `Недостаточно товара: ${unavailable.name}. Доступно ${unavailable.stock} шт.`;
+        messageElement.textContent = `Недостаточно товара: ${unavailable.name}. Доступно ${unavailable.stock} шт.`;
         messageElement.className = "error";
         return;
       }
 
       let total = 0;
-      let receipt = "ЧЕК\n";
-
+      let rows = "";
       selected.forEach(product => {
         const quantity = cart[product.id];
         const sum = quantity * product.price;
         total += sum;
-        receipt += `${product.name} × ${quantity} — ${sum} тг\n`;
+        rows += `<div class="receipt-row"><span>${product.name} × ${quantity}</span><span>${sum} тг</span></div>`;
       });
 
-      receipt += `\nИтого: ${total} тг`;
+      const now = new Date();
+      const time = now.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+      const date = now.toLocaleDateString("ru-RU");
 
-      selected.forEach(product => {
-        product.stock -= cart[product.id];
-      });
-
-      products.forEach(product => {
-        document.getElementById(`stock-${product.id}`).textContent =
-          product.stock;
-      });
-
-      receiptElement.textContent = receipt;
+      receiptElement.innerHTML = `
+        <div class="receipt-head"><strong>APEX FLOW</strong><br>Школьная ярмарка</div>
+        <div class="receipt-dashed">${date} · ${time}</div>
+        ${rows}
+        <div class="receipt-total"><div class="receipt-row"><span>ИТОГО</span><span>${total} тг</span></div></div>
+        <div class="receipt-foot">Спасибо за покупку!<br>Хорошего вам дня ☀️</div>
+      `;
       receiptElement.className = "visible";
+
+      selected.forEach(product => { product.stock -= cart[product.id]; });
       messageElement.textContent = "Покупка оформлена";
       messageElement.className = "success";
-
+      launchConfetti();
       clearCart();
+      receiptElement.scrollIntoView({ behavior: "smooth", block: "nearest" });
     });
 
     document.getElementById("clearButton").addEventListener("click", () => {
